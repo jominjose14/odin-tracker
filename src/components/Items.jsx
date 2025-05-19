@@ -4,7 +4,7 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion";
-import {copyTree, nodeMap, root, updateTree} from "../tree";
+import {copyTree, nodeMap, persistTree, root, updateTree} from "../utils/tree.js";
 import {Checkbox} from "@/components/ui/checkbox";
 
 function Items({ tree, setTree, progress, setProgress, appState, setAppState }) {
@@ -38,6 +38,8 @@ function Items({ tree, setTree, progress, setProgress, appState, setAppState }) 
         const delta = updateTree(node, 0);
         if(oldStatus === 'partial') setProgress(progress => progress + delta);
         setTree(newTree);
+
+        persistTree(newTree);
     }
 
     const makeAccordion = (items, depth) => {

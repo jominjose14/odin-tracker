@@ -1,3 +1,5 @@
+import supabase from "./supabase";
+
 export const root = {
     name: 'Root',
     weight: 100,
@@ -210,7 +212,7 @@ const processTree = (root) => {
 
     for(const child of root.childs) {
         child.parent = root;
-        child.status = 'unchecked'; // status can be: checked, partial, unchecked
+        if(!child.status) child.status = 'unchecked'; // status can be: checked, partial, unchecked
         processTree(child);
     }
 }
@@ -285,25 +287,103 @@ export const updateTree = (identifier, depth) => {
 }
 
 const copyTreeRec = (root, parent) => {
-    const rootCopy = {};
+    const copy = {};
 
-    rootCopy.name = root.name;
-    rootCopy.weight = root.weight;
-    rootCopy.parent = parent;
-    rootCopy.status = root.status;
-    nodeMap.set(rootCopy.name, rootCopy);
+    copy.name = root.name;
+    copy.weight = root.weight;
+    copy.parent = parent;
+    copy.status = root.status;
+    nodeMap.set(copy.name, copy);
 
-    if(!root.childs) return rootCopy;
+    if(!root.childs) return copy;
 
-    rootCopy.childs = [];
+    copy.childs = [];
     for(const child of root.childs) {
-        rootCopy.childs.push(copyTreeRec(child, rootCopy));
+        copy.childs.push(copyTreeRec(child, copy));
     }
 
-    return rootCopy;
+    return copy;
 }
 
 export const copyTree = (root) => {
     nodeMap.clear();
     return copyTreeRec(root, null);
+}
+
+const copyTreeAvoidParent = (root) => {
+    if(!root) return null;
+
+    const copy = {};
+    for(const key of Object.keys(root)) {
+        if(key === 'parent' || key === 'childs') continue;
+        copy[key] = root[key];
+    }
+
+    if(!root.childs) return copy;
+
+    copy.childs = [];
+    for(const child of root.childs) {
+        copy.childs.push(copyTreeAvoidParent(child));
+    }
+
+    return copy;
+}
+
+export const serializeTree = (root) => {
+    root = copyTreeAvoidParent(root);
+    return JSON.stringify(root);
+}
+
+let prevReqTimestamp = null;
+
+export const persistTree = async (root) => {
+    if(prevReqTimestamp !== null && Date.now() - prevReqTimestamp < 500) return; // rate limit of 2 req/sec
+    prevReqTimestamp = Date.now();
+
+    const payload = serializeTree(root);
+
+    try {
+        const {error} = await supabase
+            .from('state')
+            .update({ tree: payload })
+            .eq('id', 1);
+        if(error) console.error(error);
+    } catch (e) {
+        console.error("Error while persisting tree", e);
+    }
+}
+
+export const fetchTree = async () => {
+    try {
+        const { data, error } = await supabase
+            .from('state')
+            .select('tree')
+            .limit(1)
+            .single();
+
+        if(error) {
+            console.error(error);
+            return null;
+        } else if(data.tree) {
+            const tree = JSON.parse(data.tree);
+            processTree(tree); // add parent field to each node, add each node to nodeMap
+            return tree;
+        } else {
+            return null;
+        }
+    } catch (e) {
+        console.error("Error while fetching tree", e);
+        return null;
+    }
+}
+
+export const calcProgress = (root) => {
+    if(!root.childs) return root.status === 'checked' ? root.weight : 0;
+
+    let progress = 0;
+    for(const child of root.childs) {
+        progress += calcProgress(child);
+    }
+
+    return progress;
 }

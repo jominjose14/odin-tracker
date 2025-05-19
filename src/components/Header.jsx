@@ -3,7 +3,9 @@ import {Switch} from "@/components/ui/switch";
 
 function Header({ progress }) {
     const [sits, setSits] = useState(1);
-    const daysRemain = (100-progress)/sits;
+    const timeToProgressOnePercent = 1.4; // number of days it takes to make 1% progress
+    let daysRemain = timeToProgressOnePercent * (100-progress) / sits;
+    daysRemain = Math.ceil(daysRemain);
     const endDate = new Date();
     endDate.setDate(endDate.getDate() + daysRemain);
 
