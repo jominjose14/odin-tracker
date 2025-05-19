@@ -10,7 +10,7 @@ function Video({ setAppState }) {
         <>
             <button
                 id='messmer-iframe-close-btn'
-                className='fixed z-3 top-0 left-0 right-0 mx-auto my-4 grid place-items-center size-12 rounded-full font-mono pl-0.5 text-2xl text-white bg-white/10 hover:bg-white/20 cursor-pointer'
+                className='fixed z-3 inset-0 m-auto grid place-items-center size-12 rounded-full font-mono pl-0.5 text-2xl text-white bg-white/10 hover:bg-white/20 cursor-pointer'
                 onClick={closeVideo}
             >
                 x

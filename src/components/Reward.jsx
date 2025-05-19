@@ -4,21 +4,27 @@ import gamingPcImg from '../assets/gaming-pc.png';
 function Reward({ setAppState }) {
     const fadeSidesStyle = '[mask-image:linear-gradient(to_right,transparent,black_15%,black_85%,transparent)]';
 
-    const foo = () => {
-        const audio = new Audio(newItemMp3);
-        audio.play();
-
-        const handleE = (e) => {
-            if(e.key !== 'e') return;
-            document.removeEventListener('keydown', handleE);
-            setAppState('end');
-        };
-        document.addEventListener('keydown', handleE);
+    const selfDestruct = () => {
+        document.removeEventListener('keydown', onKeyDownE);
+        setAppState('end');
     }
-    foo();
+
+    const onKeyDownE = (e) => {
+        if(e.key !== 'e') return;
+        selfDestruct();
+    };
+
+    const audio = new Audio(newItemMp3);
+    audio.play();
+
+    document.addEventListener('keydown', onKeyDownE);
 
     return (
-        <div id='reward' className='animate-fade-in font-serif fixed bottom-1/7 left-0 right-0 m-auto h-1/3 w-1/3'>
+        <div
+            id='reward'
+            className='animate-fade-in font-serif fixed bottom-1/20 left-1/20 right-1/20 md:left-1/12 md:right-1/12 lg:left-1/3 lg:right-1/3 mx-auto h-fit'
+            onClick={selfDestruct}
+        >
             <div className={`flex flex-col items-center justify-center pt-2 pb-4 mb-8 border-y-2 border-y-amber-200 bg-black/50 ${fadeSidesStyle}`}>
                 <div className='text-xs text-amber-200 my-1'>NEW</div>
                 <div className={`w-1/2 text-center border-b-1 border-b-amber-200 mb-4 ${fadeSidesStyle}`}>Gaming PC</div>
