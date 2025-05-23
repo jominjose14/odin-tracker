@@ -1,4 +1,4 @@
-import supabase from "./supabase";
+import supabase, {TABLE_PREFIX} from "./supabase";
 
 export const root = {
     name: 'Root',
@@ -344,7 +344,7 @@ export const persistTree = async (root) => {
 
     try {
         const {error} = await supabase
-            .from('state')
+            .from(TABLE_PREFIX + 'state')
             .update({ tree: payload })
             .eq('id', 1);
         if(error) console.error(error);
@@ -356,7 +356,7 @@ export const persistTree = async (root) => {
 export const fetchTree = async () => {
     try {
         const { data, error } = await supabase
-            .from('state')
+            .from(TABLE_PREFIX + 'state')
             .select('tree')
             .limit(1)
             .single();
